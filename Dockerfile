@@ -16,14 +16,18 @@ ENV PATH="/root/.local/bin:${PATH}"
 # Install Claude Code CLI globally (for SDK compatibility)
 RUN npm install -g @anthropic-ai/claude-code
 
-# Copy the app code
-COPY . /app
-
 # Set working directory
 WORKDIR /app
 
+# 4. 关键步骤：只复制 pyproject.toml 和 poetry.lock
+# 这一步是缓存优化的核心。只有当这两个文件改变时，才会重新执行后续的 poetry install。
+COPY pyproject.toml poetry.lock ./
+
 # Install Python dependencies with Poetry
-RUN poetry install --no-root
+RUN poetry install --no-root --no-dev --sync
+
+# Copy the app code
+COPY . .
 
 # --- BEGIN CHANGES ---
 
