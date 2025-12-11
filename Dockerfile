@@ -25,6 +25,20 @@ WORKDIR /app
 # Install Python dependencies with Poetry
 RUN poetry install --no-root
 
+# --- BEGIN CHANGES ---
+
+# 1. Create a non-root user and group called "appuser"
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 2. Change ownership of the app directory and the Poetry installation
+#    The poetry installation is in /root/.local, so we change its ownership too.
+RUN chown -R appuser:appuser /app /root/.local
+
+# 3. Switch to the non-root user
+USER appuser
+
+# --- END CHANGES ---
+
 # Expose the port (default 8000)
 EXPOSE 8000
 

@@ -69,9 +69,10 @@ class ClaudeCodeCLI:
                     tools=[],
                     allowed_tools=[],
                     permission_mode="bypassPermissions",
-                    sandbox={
-                        "enabled": True,
-                    },
+                    # run in Docker
+                    # sandbox={
+                    #     "enabled": True,
+                    # },
                 ),
             ):
                 messages.append(message)
@@ -135,9 +136,9 @@ class ClaudeCodeCLI:
                     tools=[],
                     allowed_tools=[],
                     permission_mode="bypassPermissions",
-                    sandbox={
-                        "enabled": True,
-                    },
+                    # sandbox={
+                    #     "enabled": True,
+                    # },
                 )
 
                 # Set model if specified
