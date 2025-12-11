@@ -5,7 +5,7 @@ import shutil
 from typing import AsyncGenerator, Dict, Any, Optional, List
 from pathlib import Path
 import logging
-import time 
+import time
 from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class ClaudeCodeCLI:
         try:
             # Test SDK with a simple query
             logger.info("Testing Claude Agent SDK...")
-            start_time = time.time()  
+            start_time = time.time()
             messages = []
             async for message in query(
                 prompt="Hello",
@@ -65,14 +65,17 @@ class ClaudeCodeCLI:
                     max_turns=1,
                     cwd=self.cwd,
                     # model="claude-3-5-haiku-20241022",
-                    system_prompt={"type": "preset", "preset": "claude_code"},
+                    # system_prompt={"type": "preset", "preset": "claude_code"},
+                    tools=[],
+                    allowed_tools=[],
+                    permission_mode="bypassPermissions",
                 ),
             ):
                 messages.append(message)
-                if isinstance(message, AssistantMessage):  
-                    logger.debug(f"首条消息延迟: {time.time() - start_time:.2f}s")  
-                elif isinstance(message, ResultMessage):  
-                    logger.debug(f"总耗时: {time.time() - start_time:.2f}s")  
+                if isinstance(message, AssistantMessage):
+                    logger.debug(f"首条消息延迟: {time.time() - start_time:.2f}s")
+                elif isinstance(message, ResultMessage):
+                    logger.debug(f"总耗时: {time.time() - start_time:.2f}s")
                     logger.debug(f"API耗时: {message.duration_api_ms}ms")
                 # Break early on first response to speed up verification
                 # Handle both dict and object types
@@ -123,7 +126,13 @@ class ClaudeCodeCLI:
 
             try:
                 # Build SDK options
-                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd, tools=[], allowed_tools=[], permission_mode="bypassPermissions")
+                options = ClaudeAgentOptions(
+                    max_turns=max_turns,
+                    cwd=self.cwd,
+                    tools=[],
+                    allowed_tools=[],
+                    permission_mode="bypassPermissions",
+                )
 
                 # Set model if specified
                 if model:
@@ -133,8 +142,8 @@ class ClaudeCodeCLI:
                 # Use structured format as per SDK documentation
                 if system_prompt:
                     options.system_prompt = {"type": "text", "text": system_prompt}
-                else: 
-                    #TODO disable default system prompt
+                else:
+                    # TODO disable default system prompt
                     # Use Claude Code preset to maintain expected behavior
                     options.system_prompt = {"type": "preset", "preset": "claude_code"}
 
