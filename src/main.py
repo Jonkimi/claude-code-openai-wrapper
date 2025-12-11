@@ -137,7 +137,7 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("Testing Claude Agent SDK connection...")
         # Use asyncio.wait_for to enforce timeout (30 seconds)
-        cli_verified = await asyncio.wait_for(claude_cli.verify_cli(), timeout=30.0)
+        cli_verified = await asyncio.wait_for(claude_cli.verify_cli(), timeout=60.0)
 
         if cli_verified:
             logger.info("✅ Claude Agent SDK verified successfully")

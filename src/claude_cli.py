@@ -5,8 +5,8 @@ import shutil
 from typing import AsyncGenerator, Dict, Any, Optional, List
 from pathlib import Path
 import logging
-
-from claude_agent_sdk import query, ClaudeAgentOptions
+import time 
+from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
 
 logger = logging.getLogger(__name__)
 
@@ -56,17 +56,24 @@ class ClaudeCodeCLI:
         try:
             # Test SDK with a simple query
             logger.info("Testing Claude Agent SDK...")
-
+            start_time = time.time()  
             messages = []
             async for message in query(
                 prompt="Hello",
                 options=ClaudeAgentOptions(
+                    stderr=lambda msg: logger.error(f"CLI stderr: {msg}"),
                     max_turns=1,
                     cwd=self.cwd,
+                    # model="claude-3-5-haiku-20241022",
                     system_prompt={"type": "preset", "preset": "claude_code"},
                 ),
             ):
                 messages.append(message)
+                if isinstance(message, AssistantMessage):  
+                    logger.debug(f"首条消息延迟: {time.time() - start_time:.2f}s")  
+                elif isinstance(message, ResultMessage):  
+                    logger.debug(f"总耗时: {time.time() - start_time:.2f}s")  
+                    logger.debug(f"API耗时: {message.duration_api_ms}ms")
                 # Break early on first response to speed up verification
                 # Handle both dict and object types
                 msg_type = (
@@ -160,7 +167,8 @@ class ClaudeCodeCLI:
                                     attr_value = getattr(message, attr_name)
                                     if not callable(attr_value):  # Skip methods
                                         message_dict[attr_name] = attr_value
-                                except:
+                                except Exception as e:
+                                    logger.warning(f"Failed to get attribute {attr_name}: {e}")
                                     pass
 
                         logger.debug(f"Converted message dict: {message_dict}")
