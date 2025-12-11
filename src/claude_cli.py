@@ -123,7 +123,7 @@ class ClaudeCodeCLI:
 
             try:
                 # Build SDK options
-                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd)
+                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd, tools=[], allowed_tools=[], permission_mode="bypassPermissions")
 
                 # Set model if specified
                 if model:
@@ -133,7 +133,8 @@ class ClaudeCodeCLI:
                 # Use structured format as per SDK documentation
                 if system_prompt:
                     options.system_prompt = {"type": "text", "text": system_prompt}
-                else:
+                else: 
+                    #TODO disable default system prompt
                     # Use Claude Code preset to maintain expected behavior
                     options.system_prompt = {"type": "preset", "preset": "claude_code"}
 
@@ -145,7 +146,7 @@ class ClaudeCodeCLI:
 
                 # Handle session continuity
                 if continue_session:
-                    options.continue_session = True
+                    options.continue_conversation = True
                 elif session_id:
                     options.resume = session_id
 
