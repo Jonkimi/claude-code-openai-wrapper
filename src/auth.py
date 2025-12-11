@@ -1,5 +1,7 @@
 import os
 import logging
+import secrets
+import string
 from typing import Optional, Dict, Any, Tuple
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,6 +10,8 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 load_dotenv()
 
+# Global variable to store runtime-generated API key
+runtime_api_key = None
 
 class ClaudeCodeAuthManager:
     """Manages authentication for Claude Code SDK integration."""
@@ -19,14 +23,8 @@ class ClaudeCodeAuthManager:
 
     def get_api_key(self):
         """Get the active API key (environment or runtime-generated)."""
-        # Try to import runtime_api_key from main module
-        try:
-            from src import main
-
-            if hasattr(main, "runtime_api_key") and main.runtime_api_key:
-                return main.runtime_api_key
-        except ImportError:
-            pass
+        if runtime_api_key:
+            return runtime_api_key
 
         # Fall back to environment variable
         return self.env_api_key
@@ -233,6 +231,15 @@ async def verify_api_key(
         )
 
     return True
+
+
+def generate_secure_token(length: int = 32) -> str:
+    """Generate a secure random token for API authentication."""
+    alphabet = string.ascii_letters + string.digits + "-_"
+    global runtime_api_key
+    runtime_api_key = "".join(secrets.choice(alphabet) for _ in range(length))
+    return runtime_api_key
+
 
 
 def validate_claude_code_auth() -> Tuple[bool, Dict[str, Any]]:

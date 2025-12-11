@@ -35,7 +35,7 @@ from src.models import (
 )
 from src.claude_cli import ClaudeCodeCLI
 from src.message_adapter import MessageAdapter
-from src.auth import verify_api_key, security, validate_claude_code_auth, get_claude_code_auth_info
+from src.auth import verify_api_key, security, validate_claude_code_auth, get_claude_code_auth_info, generate_secure_token
 from src.parameter_validator import ParameterValidator, CompatibilityReporter
 from src.session_manager import session_manager
 from src.tool_manager import tool_manager
@@ -59,14 +59,6 @@ log_level = logging.DEBUG if (DEBUG_MODE or VERBOSE) else logging.INFO
 logging.basicConfig(level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Global variable to store runtime-generated API key
-runtime_api_key = None
-
-
-def generate_secure_token(length: int = 32) -> str:
-    """Generate a secure random token for API authentication."""
-    alphabet = string.ascii_letters + string.digits + "-_"
-    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 def prompt_for_api_protection() -> Optional[str]:
@@ -179,7 +171,7 @@ async def lifespan(app: FastAPI):
         logger.debug("   GET  /v1/auth/status - Authentication status")
         logger.debug("   GET  /health - Health check")
         logger.debug(
-            f"🔧 API Key protection: {'Enabled' if (os.getenv('API_KEY') or runtime_api_key) else 'Disabled'}"
+            f"🔧 API Key protection: {'Enabled' if (os.getenv('API_KEY') or auth_manager.get_api_key()) else 'Disabled'}"
         )
 
     # Start session cleanup task
@@ -841,7 +833,7 @@ async def get_auth_status(request: Request):
             "api_key_source": (
                 "environment"
                 if os.getenv("API_KEY")
-                else ("runtime" if runtime_api_key else "none")
+                else ("runtime" if active_api_key else "none")
             ),
             "version": "1.0.0",
         },
@@ -1170,7 +1162,6 @@ def run_server(port: int = None):
     import uvicorn
 
     # Handle interactive API key protection
-    global runtime_api_key
     runtime_api_key = prompt_for_api_protection()
 
     # Priority: CLI arg > ENV var > default
