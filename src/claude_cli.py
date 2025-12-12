@@ -66,7 +66,6 @@ class ClaudeCodeCLI:
                     cwd=self.cwd,
                     # model="claude-3-5-haiku-20241022",
                     # system_prompt={"type": "preset", "preset": "claude_code"},
-                    tools=[],
                     allowed_tools=[],
                     permission_mode="bypassPermissions",
                     # run in Docker
@@ -133,7 +132,6 @@ class ClaudeCodeCLI:
                 options = ClaudeAgentOptions(
                     max_turns=max_turns,
                     cwd=self.cwd,
-                    tools=[],
                     allowed_tools=[],
                     permission_mode="bypassPermissions",
                     # sandbox={
