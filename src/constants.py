@@ -8,6 +8,9 @@ Single source of truth for tool names, models, and other configuration values.
 # These are the built-in tools available in the Claude Agent SDK
 CLAUDE_TOOLS = [
     "Task",  # Launch agents for complex tasks
+    "TaskOutput",
+    "EnterPlanMode",
+    "ExitPlanMode",
     "Bash",  # Execute bash commands
     "Glob",  # File pattern matching
     "Grep",  # Search file contents
@@ -28,9 +31,9 @@ CLAUDE_TOOLS = [
 # Subset of CLAUDE_TOOLS that are safe and commonly used
 DEFAULT_ALLOWED_TOOLS = [
     "Read",
-    "Glob",
-    "Grep",
-    "Bash",
+    #"Glob",
+    #"Grep",
+    #"Bash",
     "Write",
     "Edit",
 ]

@@ -64,6 +64,7 @@ class ClaudeCodeCLI:
                     stderr=lambda msg: logger.error(f"CLI stderr: {msg}"),
                     max_turns=1,
                     cwd=self.cwd,
+                    permission_mode="bypassPermissions",
                     # model="claude-3-5-haiku-20241022",
                     system_prompt={"type": "preset", "preset": "claude_code"},
                 ),
@@ -123,7 +124,7 @@ class ClaudeCodeCLI:
 
             try:
                 # Build SDK options
-                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd)
+                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd, permission_mode="bypassPermissions")
 
                 # Set model if specified
                 if model:
