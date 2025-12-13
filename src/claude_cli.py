@@ -5,10 +5,19 @@ import shutil
 from typing import AsyncGenerator, Dict, Any, Optional, List
 from pathlib import Path
 import logging
-import time 
-from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
+import time
+from claude_agent_sdk import (
+    query,
+    ClaudeAgentOptions,
+    AssistantMessage,
+    ResultMessage,
+    ClaudeSDKClient,
+)
 
 logger = logging.getLogger(__name__)
+
+
+CLAUDE_CLI_PATH = os.environ.get("CLAUDE_CLI_PATH", "claude")
 
 
 class ClaudeCodeCLI:
@@ -56,12 +65,13 @@ class ClaudeCodeCLI:
         try:
             # Test SDK with a simple query
             logger.info("Testing Claude Agent SDK...")
-            start_time = time.time()  
+            start_time = time.time()
             messages = []
             async for message in query(
                 prompt="Hello",
                 options=ClaudeAgentOptions(
                     stderr=lambda msg: logger.error(f"CLI stderr: {msg}"),
+                    cli_path=CLAUDE_CLI_PATH,
                     max_turns=1,
                     cwd=self.cwd,
                     permission_mode="bypassPermissions",
@@ -70,10 +80,10 @@ class ClaudeCodeCLI:
                 ),
             ):
                 messages.append(message)
-                if isinstance(message, AssistantMessage):  
-                    logger.debug(f"首条消息延迟: {time.time() - start_time:.2f}s")  
-                elif isinstance(message, ResultMessage):  
-                    logger.debug(f"总耗时: {time.time() - start_time:.2f}s")  
+                if isinstance(message, AssistantMessage):
+                    logger.debug(f"首条消息延迟: {time.time() - start_time:.2f}s")
+                elif isinstance(message, ResultMessage):
+                    logger.debug(f"总耗时: {time.time() - start_time:.2f}s")
                     logger.debug(f"API耗时: {message.duration_api_ms}ms")
                 # Break early on first response to speed up verification
                 # Handle both dict and object types
@@ -124,7 +134,12 @@ class ClaudeCodeCLI:
 
             try:
                 # Build SDK options
-                options = ClaudeAgentOptions(max_turns=max_turns, cwd=self.cwd, permission_mode="bypassPermissions")
+                options = ClaudeAgentOptions(
+                    cli_path=CLAUDE_CLI_PATH,
+                    max_turns=max_turns,
+                    cwd=self.cwd,
+                    permission_mode="bypassPermissions",
+                )
 
                 # Set model if specified
                 if model:
@@ -133,10 +148,12 @@ class ClaudeCodeCLI:
                 # Set system prompt - CLAUDE AGENT SDK STRUCTURED FORMAT
                 # Use structured format as per SDK documentation
                 if system_prompt:
+                    logger.debug(f"system_prompt: {system_prompt}")
                     options.system_prompt = {"type": "text", "text": system_prompt}
                 else:
                     # Use Claude Code preset to maintain expected behavior
-                    options.system_prompt = {"type": "preset", "preset": "claude_code"}
+                    # options.system_prompt = {"type": "preset", "preset": "claude_code"}
+                    options.system_prompt = {"type": "text", "text": "You are a helpful assistant."}
 
                 # Set tool restrictions
                 if allowed_tools:
@@ -146,7 +163,7 @@ class ClaudeCodeCLI:
 
                 # Handle session continuity
                 if continue_session:
-                    options.continue_session = True
+                    options.continue_conversation = True
                 elif session_id:
                     options.resume = session_id
 
