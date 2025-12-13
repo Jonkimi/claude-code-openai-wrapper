@@ -35,9 +35,16 @@ from src.models import (
 )
 from src.claude_cli import ClaudeCodeCLI
 from src.message_adapter import MessageAdapter
-from src.auth import verify_api_key, security, validate_claude_code_auth, get_claude_code_auth_info, generate_secure_token
+from src.auth import (
+    verify_api_key,
+    security,
+    validate_claude_code_auth,
+    get_claude_code_auth_info,
+    generate_secure_token,
+)
 from src.parameter_validator import ParameterValidator, CompatibilityReporter
 from src.session_manager import session_manager
+from src.auth import auth_manager
 from src.tool_manager import tool_manager
 from src.mcp_client import mcp_client, MCPServerConfig
 from src.rate_limiter import (
@@ -58,7 +65,6 @@ VERBOSE = os.getenv("VERBOSE", "false").lower() in ("true", "1", "yes", "on")
 log_level = logging.DEBUG if (DEBUG_MODE or VERBOSE) else logging.INFO
 logging.basicConfig(level=log_level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
 
 
 def prompt_for_api_protection() -> Optional[str]:
@@ -821,7 +827,6 @@ async def debug_request_validation(request: Request):
 @rate_limit_endpoint("auth")
 async def get_auth_status(request: Request):
     """Get Claude Code authentication status."""
-    from src.auth import auth_manager
 
     auth_info = get_claude_code_auth_info()
     active_api_key = auth_manager.get_api_key()
@@ -831,9 +836,7 @@ async def get_auth_status(request: Request):
         "server_info": {
             "api_key_required": bool(active_api_key),
             "api_key_source": (
-                "environment"
-                if os.getenv("API_KEY")
-                else ("runtime" if active_api_key else "none")
+                "environment" if os.getenv("API_KEY") else ("runtime" if active_api_key else "none")
             ),
             "version": "1.0.0",
         },
