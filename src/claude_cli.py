@@ -193,6 +193,9 @@ class ClaudeCodeCLI:
                         yield message_dict
                     else:
                         yield message
+                    if max_turns == 1 and isinstance(message, AssistantMessage):
+                        # 因为只有一条消息,所以直接break
+                        break
 
             finally:
                 # Restore original environment (if we changed anything)
