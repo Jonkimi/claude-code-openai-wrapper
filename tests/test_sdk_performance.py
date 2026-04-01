@@ -638,6 +638,43 @@ NUM_ITERATIONS = 5  # Number of times to run each query method
 # This path needs to be valid for the test to run
 CLAUDE_CLI_PATH = os.environ.get("CLAUDE_CLI_PATH", "claude")  # Adjust this default if necessary
 
+# 定义自定义工具
+custom_tools = [
+    {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "description": "城市名称"
+                },
+                "unit": {
+                    "type": "string",
+                    "enum": ["celsius", "fahrenheit"],
+                    "description": "温度单位"
+                }
+            },
+            "required": ["city"]
+        }
+    },
+    {
+        "name": "calculate",
+        "description": "执行数学计算",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string",
+                    "description": "数学表达式，如 '2 + 2'"
+                }
+            },
+            "required": ["expression"]
+        }
+    }
+]
+
 
 async def run_benchmark():
     """
@@ -656,8 +693,8 @@ async def run_benchmark():
         options = ClaudeAgentOptions(
             cli_path=CLAUDE_CLI_PATH,
             max_turns=1,
-            # model="claude-sonnet-4-5-20250929",
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-5-20250929",
+            # model="claude-haiku-4-5-20251001",
             # model="claude-opus-4-5-20251101",
             cwd=cwd,
             max_thinking_tokens=21999,
